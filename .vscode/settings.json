@@ -1,0 +1,17 @@
+{
+    "files.associations": {
+        "iostream": "cpp",
+        "iosfwd": "cpp",
+        "tuple": "cpp",
+        "ostream": "cpp",
+        "chrono": "cpp",
+        "deque": "cpp",
+        "string": "cpp",
+        "vector": "cpp",
+        "random": "cpp",
+        "xloctime": "cpp",
+        "*.tcc": "cpp",
+        "algorithm": "cpp",
+        "regex": "cpp"
+    }
+}
