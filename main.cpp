@@ -1,6 +1,7 @@
 #include <bits/stdc++.h>
 #include "common.h"
 #include "lexer/lexer.h"
+#include "parser/parser.h"
 
 using namespace std;
 
@@ -29,7 +30,10 @@ int main(int argc, char* argv[]) {
     
 
     vector<Token> tokens = tokenize(str);
+    tokens = removeWhitespaces(tokens);
     printTokens(tokens);
+    parseTokens(tokens);
+
     
 
 }

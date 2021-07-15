@@ -17,6 +17,7 @@ using namespace std;
         DO do
         PRINT print
         DRAW draw
+        RETURN return
 
 
     OPERATORS
@@ -70,25 +71,6 @@ using namespace std;
 
 */
 
-enum {
-    INT, FLOAT, CHAR, STR, BOOL, IF, ELSE, FOR, WHILE, DO, PRINT, DRAW,
-    ADD, SUB, MUL, DIV, MOD,
-    OR, AND, NOT, EQ, GT, LT, GEQ, LEQ, NEQ,
-    BOR, BAND, BNOT, BXOR,
-    ASSIGN,
-    CHAR_LIT, STR_LIT, INT_LIT, BOOL_LIT, FLOAT_LIT,
-    IDEN, L_PAR, R_PAR, L_BKT, R_BKT, L_BRC, R_BRC, SEMI, COMMA, END, WS, ERR 
-};
-
-vector<string> tokenNames =  {
-    "INT", "FLOAT", "CHAR", "STR", "BOOL", "IF", "ELSE", "FOR", "WHILE", "DO", "PRINT", "DRAW",
-    "ADD", "SUB", "MUL", "DIV", "MOD",
-    "OR", "AND", "NOT", "EQ", "GT", "LT", "GEQ", "LEQ", "NEQ",
-    "BOR", "BAND", "BNOT", "BXOR",
-    "ASSIGN",
-    "CHAR_LIT", "STR_LIT", "INT_LIT", "BOOL_LIT", "FLOAT_LIT",
-    "IDEN", "L_PAR", "R_PAR", "L_BKT", "R_BKT", "L_BRC", "R_BRC", "SEMI", "COMMA", "END", "WS", "ERR"
-};
 
 
 bool isKeywordOrIdentifier(string s);
@@ -133,7 +115,7 @@ vector<Token> tokenize(string in) {
         } else if (isOperator(buffer, next)) {
             result.push_back(getOperator(buffer, cur_line, cur_pos));
             buffer = "";
-        } else if (cur == ' ' || cur == '\t' || cur == '\n' ) {
+        } else if ((cur == ' ' && buffer[0] != '"') || cur == '\t' || cur == '\n') {
             if (containsNonWhitespace(buffer)) {
                 result.push_back(Token{ERR, buffer.substr(0, buffer.size() - 1), cur_line, cur_pos});
             }
@@ -192,6 +174,7 @@ Token getKeyword(string str, int line, int pos) {
     else if (str == "char") res.type = CHAR;
     else if (str == "string") res.type = STR;
     else if (str == "bool") res.type = BOOL;
+    else if (str == "return") res.type = RETURN;
     else res.type = IDEN;
 
     return res;
@@ -199,7 +182,7 @@ Token getKeyword(string str, int line, int pos) {
 
 
 bool isCharLiteral(string s) {
-    if (s.size() != 3 || s.size() != 4) return false;
+    if (s.size() != 3 && s.size() != 4) return false;
     if (s.size() == 3) {
         return s[0] == '\'' && s[1] != '\\' && s[2] == '\'';
     } else {
@@ -266,10 +249,10 @@ Token getLiteral(string s, int line, int pos) {
     res.line = line;
     res.pos = pos;
     
-    if (isCharLiteral(s)) res.type = CHAR; 
-    else if (isStringLiteral(s)) res.type = STR; 
-    else if (isIntLiteral(s)) res.type = INT; 
-    else if (isFloatLiteral(s)) res.type = FLOAT;
+    if (isCharLiteral(s)) res.type = CHAR_LIT; 
+    else if (isStringLiteral(s)) res.type = STR_LIT; 
+    else if (isIntLiteral(s)) res.type = INT_LIT; 
+    else if (isFloatLiteral(s)) res.type = FLOAT_LIT;
     return res; 
 }
 
@@ -371,4 +354,12 @@ bool containsNonWhitespace(string s) {
         if (c != ' ' & c != '\t' && c != '\n') return false;
     }
     return false;
+}
+
+vector<Token> removeWhitespaces(vector<Token> &toks) {
+    vector<Token> result;
+    for (auto it: toks) {
+        if (it.type != WS) result.push_back(it);
+    }
+    return result;
 }
