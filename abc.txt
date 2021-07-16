@@ -1,1 +1,1 @@
-float x = 7;
+int x = y;
