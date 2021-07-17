@@ -28,10 +28,10 @@ int main(int argc, char* argv[]) {
 
     string str = buf.str();
     
-
+    
     vector<Token> tokens = tokenize(str);
     tokens = removeWhitespaces(tokens);
-    printTokens(tokens);
+    // printTokens(tokens);
     parseTokens(tokens);
 
     

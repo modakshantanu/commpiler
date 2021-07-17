@@ -167,13 +167,12 @@ Token getKeyword(string str, int line, int pos) {
     else if (str == "while") res.type = WHILE;
     else if (str == "do") res.type = DO;
     else if (str == "for") res.type = FOR;
-    else if (str == "print") res.type = PRINT;
-    else if (str == "draw") res.type = DRAW;
     else if (str == "int") res.type = INT;
     else if (str == "float") res.type = FLOAT;
     else if (str == "char") res.type = CHAR;
     else if (str == "string") res.type = STR;
     else if (str == "bool") res.type = BOOL;
+    else if (str == "void") res.type = VOID;
     else if (str == "return") res.type = RETURN;
     else res.type = IDEN;
 
@@ -267,13 +266,15 @@ bool isLiteralBreak(char c) {
 bool isOperator(string s, char next) {
     if (s.size() > 2 || s.size() < 1) return false;
     if (s.size() == 1) {
-        if ((s == "<" || s == ">" || s == "!" || s == "=") && next != '=') return true;
+        if ((s == "!" || s == "=") && next != '=') return true;
+        if (s == ">" && next != '=' && next != '>') return true;
+        if (s == "<" && next != '=' && next != '<') return true;
         if (s == "|" && next != '|') return true;
         if (s == "&" && next != '&') return true;
         if (s == "+" || s == "-" 
                 || s == "*" || s == "/" || s == "%" || s == "~" || s == "^") return true;
     } else if (s.size() == 2) {
-        if (s == ">=" || s == "<=" || s == "==" || s == "!=" || s == "&&" || s == "||") return true;
+        if (s == ">=" || s == "<=" || s == "==" || s == "!=" || s == "&&" || s == "||" || s == ">>" || s == "<<") return true;
     }
     return false;
 }
@@ -299,6 +300,8 @@ Token getOperator(string s, int line, int pos) {
         m.insert({"<",LT}); 
         m.insert({">=",GEQ}); 
         m.insert({"<=",LEQ}); 
+        m.insert({"<<",L_SHIFT}); 
+        m.insert({">>",R_SHIFT}); 
         m.insert({"!=",NEQ}); 
         m.insert({"|",BOR}); 
         m.insert({"&",BAND}); 

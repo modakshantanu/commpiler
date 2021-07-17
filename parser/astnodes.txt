@@ -1,0 +1,98 @@
+PROGRAM:
+    FUNCTION*
+
+FUNCTION_DECL
+    TYPE
+    IDENTIFIER
+    PARAM_LIST
+    STATEMENT
+    
+FUNCTION_CALL:
+    IDENTIFIER
+    ARG_LIST
+
+PARAM_LIST:
+    DECLARATION*
+
+ARG_LIST:
+    EXPRESSION*
+
+DECLARATION:
+    TYPE
+    IDENTIFIER
+
+INDEXED:
+    IDENTIFIER
+    EXPRESSION
+
+Each EXPERSSION Is Either 
+    - Function call / Identifier / Literal(5 types) / Indexed (Terminal Node)
+    - Binary Operator (2 children)
+    - Unary Operator (1 child)
+
+EXPRESSION:
+    INT:
+    FLOAT:
+    STRING:
+    CHAR:
+    BOOL:
+    INDEXED:
+    FUNCTION_CALL:
+    IDEN:
+
+    UADD:
+    USUB:
+    NOT:
+    BNOT:
+        
+    ADD:
+    SUB:
+    MUL:
+    DIV:
+    MOD:
+
+    OR:
+    AND:
+    EQ:
+    LT:
+    GT:
+    GEQ:
+    LEQ:
+    NEQ:
+    BOR:
+    BAND:
+    BXOR:
+    L_SHIFT:
+    R_SHIFT:
+
+STATEMENT:
+    BLOCK:
+        STATEMENT*
+    RETURN:
+        EXPERSSION
+    ASSIGN:
+        IDENTIFIER
+        EXPRESSION
+    DECLASSIGN:
+        DECLARATION
+        EXPERSSION
+    DECLONLY:
+        DECLARATION
+    FUNCTION_CALL:
+
+    IFELSE:
+        EXPERSSION
+        STATEMENT
+        STATEMENT
+    IF
+        EXPERSSION
+        STATEMENT
+    WHILE
+        EXPERSSION
+        STATEMENT
+    EMPTY:
+
+
+
+    
+

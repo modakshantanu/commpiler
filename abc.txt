@@ -1,1 +1,6 @@
-int x = y;
+int main() {
+    int x = (bar() + 1 / f(3)) / 3 > arr[0] || y + 6 && false;
+    
+    
+}
+
