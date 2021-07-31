@@ -25,7 +25,6 @@ int main(int argc, char* argv[]) {
 
     stringstream buf;
     buf << file.rdbuf();
-
     string str = buf.str();
     
     
