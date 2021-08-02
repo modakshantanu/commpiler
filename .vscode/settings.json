@@ -12,6 +12,9 @@
         "xloctime": "cpp",
         "*.tcc": "cpp",
         "algorithm": "cpp",
-        "regex": "cpp"
+        "regex": "cpp",
+        "queue": "cpp",
+        "stack": "cpp",
+        "unordered_map": "cpp"
     }
 }

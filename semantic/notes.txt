@@ -1,0 +1,11 @@
+Rules:
+    Check if all functions and variable are declared before use
+    Check for double declaration in same scope
+        For functions: overloading is allowed
+    For all expressions, recursively get type of sub expressions and check if the operation is valid
+    For assignments, check if LHS and RHS have same type
+
+    Check if all returns in a function match the type
+    If last statement of a fuction is not return, insert one with dummy value (0)
+
+    

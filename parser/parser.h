@@ -13,6 +13,7 @@ int i = 0;
 
 bool matchExpression(Node* parent);
 bool matchStatement(Node* parent);
+bool matchFunctionBody(Node* parent);
 
 void freeNodes(Node* head) {
     if (head == NULL) return;
@@ -201,7 +202,7 @@ bool matchFunctionDecl(Node* parent) {
     bool res;
     Node* cur = new Node{Token{FUNCTION_DECL, "", 0, 0}, parent};
 
-    res = matchType(cur) && matchToken(cur, IDEN) && matchParamlist(cur) && matchStatement(cur);
+    res = matchType(cur) && matchToken(cur, IDEN) && matchParamlist(cur) && matchFunctionBody(cur);
     if (res) {
         parent->children.push_back(cur);
         return true;
@@ -475,6 +476,27 @@ bool matchStatement(Node* parent) {
     return false;
 }
 
+bool matchFunctionBody(Node* parent) {
+    int save = i;
+    bool res;
+
+    Node* cur = new Node{Token{STATEMENT, "", 0,0}, parent};
+
+    // Block
+    res = matchBlock(cur);
+    if (res) {
+        parent->children.push_back(cur);
+        return true;
+    }
+    freeArray(cur);
+    i = save;
+
+
+
+    freeNodes(cur);
+    return false;
+}
+
 bool matchProgram(Node* &cur) {
     int save = i;
     bool res; 
@@ -495,7 +517,7 @@ bool matchProgram(Node* &cur) {
 
 void cleanUp(Node* head);
 
-void parseTokens(vector<Token>& tok) {
+Node* parseTokens(vector<Token>& tok) {
     tokens = tok;
     i = 0;
 
@@ -508,9 +530,11 @@ void parseTokens(vector<Token>& tok) {
         cout<<"Success\n";
         cleanUp(head);
         printTree(head , 0);
+        return head;
     } else {
         cout<<"Failure";
     }
+    return NULL;
 }
 
 

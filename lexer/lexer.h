@@ -223,7 +223,7 @@ bool isFloatLiteral(string s) {
     int afterDecimal = 0;
 
     for (int i =0; i < s.size(); i++) {
-        if (!isdigit(s[i])) return false;
+        if (!isdigit(s[i]) && s[i] != '.') return false;
 
         if (s[i] == '.') {
             if (decimalSeen) return false; // multiple decimal points
