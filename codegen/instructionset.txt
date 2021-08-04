@@ -1,0 +1,42 @@
+16 Registers:
+1 - 11 = General
+12: Frame Pointer
+13: Stack Pointer
+14: Return address
+15: Program Counter
+
+Flags: N & Z
+Flag codes: 01 / 11 / 00 / 10 / X1 / 1X / X0 / 0X / XX
+
+
+Load Store:
+    LDR RX
+    STR RX
+
+Branch:
+    JMP RX
+    JIF Flags RA
+
+DP: 
+    OP R1 = R2 op R3 (binary)
+    OP R1 = opR2 (unary)
+
+    OPIF <Flagcode> ... = conditional execution
+    OPS = affect flags
+
+    Operands = RX or Immediate
+
+    binary
+    
+    ADD
+    SUB
+    MUL
+    ASR
+    ASL
+    XOR
+    AND
+    OR
+
+    unary
+    NOT
+    MOV
