@@ -1,2 +1,151 @@
 Layout in memory
 
+Code:
+    Main function
+    Other Functions
+
+Stack :
+    Function Activation:
+        
+
+        Param 0   <-- FP 
+        Param 1
+        ...
+        Param N-1
+        parent FP
+        parent RA
+        Local0
+        Local1
+        ...
+        Local N
+
+        ...
+
+
+                <-- Stack Pointer
+
+
+Caller:
+    Push all function arguments
+    Push own FP to stack
+    Push return address
+    Set FP to SP - (params + 2)
+    Set PC to function entry
+Callee:
+    SP += Num locals
+
+    Start execution
+    ...
+    Evaluate Return expression and place in R0
+    SP = current FP
+    FP = parent FP (relative to SP)
+    PC = RA (relative to SP)
+    
+
+Heap:
+    Not used at the moment
+
+
+Rules for code gen:
+    gen(e):
+        Place result of e in R0
+    
+    gen(e1 <op> e2):
+        gen(e1)
+        push(r0)
+        gen(e2)
+        pop(r1)
+        <op> r0 r0 r1
+
+    gen(<op> e1):
+        gen(e1)
+        <op> r0 r0
+
+    gen(if (e1) s1):
+        gen(e1, set)
+        JIF X1 skip1:       skip if z == 1 => e1 = false
+        gen(s1)
+        skip1: next statement
+    
+    gen(if (e1) s1 else s2):
+        gen(e1, set)
+        JIF X1 skip1:
+        gen(s1)
+        JMP skip2:
+        skip1: gen(s2)
+
+        skip2: next statement
+    
+    gen(while (e1) s1):
+        while1: gen(e1, set)
+        JIF X1 skip1:
+        gen(s1)
+        JMP while1:
+        
+        skip1: next statement
+    
+    gen(f(e1,e2,e3)):
+        gen(e1)
+        push(r0)
+        gen(e2)
+        push(r0)
+        gen(e3)
+        push(r0)
+        push FP
+        push Return address:
+            add r0 r15 4
+            push(r0)
+        ADD FP SP -(params + 2)
+        JMP f_entry
+
+    
+    gen (f(e1, e2 ,e2) s1):
+        SP += num locals
+        gen(s1)
+
+    gen (return e):
+        gen(e)          <--- If void, skip that line
+        mov sp fp
+        ldr fp sp +N 
+        ldr pc sp +N+1
+
+    gen(main()):
+        mov sp STACK_BASE + 2
+        move fp STACK_BASE + 0
+        push -1 (FP)
+        push -1 (RA)
+
+
+
+Overall Layout 
+    gen (main())
+    gen (void main() = s1)
+    gen (void foo() = s2)
+    ... 
+    STACK_BASE: vvv
+
+    ...
+
+
+
+
+
+    HEAP_BASE: ^^^
+
+
+
+    
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+        

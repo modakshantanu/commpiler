@@ -1,25 +1,24 @@
 16 Registers:
-1 - 11 = General
-12: Frame Pointer
-13: Stack Pointer
-14: Return address
+0 - 12 = General
+13: Frame Pointer
+14: Stack Pointer
 15: Program Counter
 
-Flags: N & Z
-Flag codes: 01 / 11 / 00 / 10 / X1 / 1X / X0 / 0X / XX
+Flags: NZCV
+Flag codes: 0 / 1 / X
 
 
 Load Store:
-    LDR RX
-    STR RX
+    LDR Rd Rm <offset>
+    STR Rd Rn <offset>
 
 Branch:
-    JMP RX
-    JIF Flags RA
+    JMP RX <offset>
+    JIF Flags RA <offset>
 
 DP: 
-    OP R1 = R2 op R3 (binary)
-    OP R1 = opR2 (unary)
+    OP R1 = R2 op R3 
+    OP R1 = op R2
 
     OPIF <Flagcode> ... = conditional execution
     OPS = affect flags
@@ -32,7 +31,8 @@ DP:
     SUB
     MUL
     ASR
-    ASL
+    LSR
+    LSL
     XOR
     AND
     OR

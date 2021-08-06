@@ -3,6 +3,7 @@
 #include "lexer/lexer.h"
 #include "parser/parser.h"
 #include "semantic/semantic.h"
+#include "codegen/codegen.h"
 
 using namespace std;
 

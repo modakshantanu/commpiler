@@ -15,6 +15,14 @@
         "regex": "cpp",
         "queue": "cpp",
         "stack": "cpp",
-        "unordered_map": "cpp"
+        "unordered_map": "cpp",
+        "functional": "cpp",
+        "system_error": "cpp",
+        "xlocmon": "cpp",
+        "xtr1common": "cpp",
+        "ratio": "cpp",
+        "array": "cpp",
+        "type_traits": "cpp",
+        "utility": "cpp"
     }
 }
