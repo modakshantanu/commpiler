@@ -529,7 +529,7 @@ Node* parseTokens(vector<Token>& tok) {
     if (res) {
         cout<<"Success\n";
         cleanUp(head);
-        printTree(head , 0);
+        
         return head;
     } else {
         cout<<"Failure";

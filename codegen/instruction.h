@@ -85,11 +85,11 @@ public:
             if (op2.type != NONE) res += " " + opToString(op2);
         } else if (type == PUSH) {
 
-            res += "PUSH R" + dest;
+            res += "PUSH R" + to_string(dest);
         } else if (type == POP) {
-            res += "POP R" + dest;
+            res += "POP R" + to_string(dest);
         } else if (type == LABEL) {
-            res += "LABEL " + dest;
+            res += "LABEL " + to_string(dest);
         }
         return res;
     } 

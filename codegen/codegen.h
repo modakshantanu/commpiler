@@ -28,14 +28,18 @@ string generate(Node* head) {
     }
 
     // Prepare for main() entry
-    inst.push_back(dp(ADD, SP, label(STACK_BASE), imm(2)));
+    inst.push_back(dp(ADD, SP, label(STACK_BASE), none()));
     inst.push_back(dp(MOV, FP, label(STACK_BASE), none()));
-    inst.push_back(push(-1));
-    inst.push_back(push(-1));
-
+    inst.push_back(dp(MOV, R0, imm(-1), none()));
+    inst.push_back(push(R0));
+    inst.push_back(push(R0));
 
     for (auto it: head->children) {
         genFunction(it);
+    }
+    
+    for (auto it: inst) {
+        cout<<it.toString()<<endl;
     }
 
     return output;
@@ -80,7 +84,7 @@ void dfs(Node* head) {
             dfsExpr(it->children[1]);
         }
 
-        if (it->token.subtype == RETURN) dfsExpr(it->children[0]);
+        if (it->token.subtype == RETURN && it->children.size() > 0) dfsExpr(it->children[0]);
 
         if (it->token.subtype == IF || it->token.subtype == WHILE) {
             dfsExpr(it->children[0]);
@@ -143,7 +147,6 @@ void genFunction(Node* head) {
     
     // Function call code
     inst.push_back(dp(ADD, SP, reg(SP), imm(num_locals))); // SP += num of locals
-    
     genBlock(head->children[3]);
 
 }
@@ -184,7 +187,7 @@ void genFuncCall(Node* head) {
 }
 
 void genExpression(Node* head) {
-    switch(head->token.type) {
+    switch(head->token.subtype) {
         // Single child expressions: Literals, Variables, Function Calls
         case INT_LIT:
             // Mov the value of the int to R0
@@ -230,23 +233,26 @@ void genExpression(Node* head) {
         // We assume all operators have a corresponding instruction
         case ADD: case SUB: case MUL: case DIV: case MOD: case BOR: case BAND: case BXOR: case L_SHIFT: case R_SHIFT:
             genExpression(head->children[0]);
-            inst.push_back(dp(MOV, R1, reg(R0), none())); // Move temp result to R1
+            inst.push_back(push(R0)); // Temporarily store on stack
             genExpression(head->children[1]);
-            inst.push_back(dp(head->token.type, R0, reg(R1), reg(R0)));
+            inst.push_back(pop(R1)); // Pop 1st result onto R1
+            inst.push_back(dp(head->token.subtype, R0, reg(R1), reg(R0)));
             break;
         
         case OR: case AND:
             genExpression(head->children[0]);
-            inst.push_back(dp(MOV, R1, reg(R0), none())); // Move temp result to R1
+            inst.push_back(push(R0));
             genExpression(head->children[1]);
+            inst.push_back(pop(R1));
             // use bitwise AND and OR to simulate the logical counterpart
-            inst.push_back(dp((head->token.type == OR ? BOR : BAND), R0, reg(R1), reg(R0)));
+            inst.push_back(dp((head->token.subtype == OR ? BOR : BAND), R0, reg(R1), reg(R0)));
             break;
         
         case EQ:
             genExpression(head->children[0]);
-            inst.push_back(dp(MOV, R1, reg(R0), none())); // Move temp result to R1
+            inst.push_back(push(R0));
             genExpression(head->children[1]);
+            inst.push_back(pop(R1));
             inst.push_back(dp(BXOR, R0, reg(R0), reg(R1), true)); // XOR, set flags
 
             inst.push_back(dp(MOV, R0, imm(0), none()));
@@ -255,8 +261,9 @@ void genExpression(Node* head) {
 
         case NEQ:
             genExpression(head->children[0]);
-            inst.push_back(dp(MOV, R1, reg(R0), none())); // Move temp result to R1
+            inst.push_back(push(R0));
             genExpression(head->children[1]);
+            inst.push_back(pop(R1));
             inst.push_back(dp(BXOR, R0, reg(R0), reg(R1), true)); // XOR, set flags
 
             inst.push_back(dp(MOV, R0, imm(0), none()));
@@ -265,10 +272,11 @@ void genExpression(Node* head) {
 
         case LT: case LEQ:
             genExpression(head->children[0]);
-            inst.push_back(dp(MOV, R1, reg(R0), none())); // Move temp result to R1
+            inst.push_back(push(R0));
             genExpression(head->children[1]);
+            inst.push_back(pop(R1));
 
-            if (head->token.type == LEQ) {
+            if (head->token.subtype == LEQ) {
                 inst.push_back(dp(ADD, R0, reg(R0), imm(1)));
             }
 
@@ -281,10 +289,11 @@ void genExpression(Node* head) {
         
         case GT: case GEQ:
             genExpression(head->children[0]);
-            inst.push_back(dp(MOV, R1, reg(R0), none())); // Move temp result to R1
+            inst.push_back(push(R0));
             genExpression(head->children[1]);
+            inst.push_back(pop(R1));
 
-            if (head->token.type == GEQ) {
+            if (head->token.subtype == GEQ) {
                 inst.push_back(dp(ADD, R1, reg(R1), imm(1)));
             }
 
@@ -298,10 +307,109 @@ void genExpression(Node* head) {
 }
 
 void genStatement(Node* head) {
+    
     // DECLASSIGN, ASSIGN, DECLONLY, RETURN, IFELSE, IF, WHILE, FUNCTION_CALL, BLOCK, EMPTY
-    if (head->token.type == DECLASSIGN) {
+    int iden_loc;
+    int lab1, lab2;
+    string iden;
+    switch(head->token.subtype) {
+        case BLOCK:
+            tmap.push();
+            genBlock(head);
+            tmap.pop();
+            break;
+        case DECLASSIGN:
+            genExpression(head->children[1]);
+            // Result is now in R0
+            iden = head->children[0]->children[1]->token.str;
+            tmap.declared(iden);
+            iden_loc = tmap.used(iden);
+            inst.push_back(mem(STR, R0, reg(FP), iden_loc)); // Store in stack frame
+            break;
+        case DECLONLY:
+            iden = head->children[0]->token.str;
+            tmap.declared(iden);
+            break;
+        case ASSIGN:
+            genExpression(head->children[1]);
+            // Result is now in R0
+            iden = head->children[0]->token.str;
+            iden_loc = tmap.used(iden);
+            // printf("iden = %s, loc = %d\n", iden.c_str(), iden_loc);
+            inst.push_back(mem(STR, R0, reg(FP), iden_loc)); // Store in stack frame
+            break;
+        case RETURN:
 
-    }
+            if (head->children.size() > 0) {
+                genExpression(head->children[0]); // Generate return expression, if any
+            }
+            inst.push_back(dp(MOV, SP, reg(FP), none())); // SP = FP
+            inst.push_back(mem(LDR, FP, reg(SP),tmap.paramList->children.size())); // FP = SP + N
+            inst.push_back(mem(LDR, PC, reg(SP),tmap.paramList->children.size() + 1)); // PC = SP + N + 1
+            break;
+        case IF:
+            lab1 = labelNum++;
+            genExpression(head->children[0]);
+            inst.push_back(dp(ADD, R0, reg(R0), imm(0), true)); // No-op to set flags
+        
+            inst.push_back(branch(label(lab1), 0, "X1XX")); // JMP IF Z == 1
+
+            tmap.push();
+            genBlock(head->children[1]);
+            tmap.pop();
+            inst.push_back(labelI(lab1));
+            break;
+        case IFELSE:
+            lab1 = labelNum++;
+            lab2 = labelNum++;
+            genExpression(head->children[0]);
+            inst.push_back(dp(ADD, R0, reg(R0), imm(0), true)); // No-op to set flags
+
+            // Jump to else block
+            inst.push_back(branch(label(lab1), 0, "X1XX")); // JMP IF Z == 1
+
+            // Code for IF Block
+            tmap.push();
+            genBlock(head->children[1]);
+            tmap.pop();
+            inst.push_back(branch(label(lab2))); // Skip else block
+            
+            // Else block
+            inst.push_back(labelI(lab1));
+            tmap.push();
+            genBlock(head->children[2]);
+            tmap.pop();
+
+            inst.push_back(labelI(lab2));
+            break;
+        case WHILE:
+            lab1 = labelNum++;
+            lab2 = labelNum++;
+            
+            inst.push_back(labelI(lab1)); // While label
+            genExpression(head->children[0]);
+            inst.push_back(dp(ADD, R0, reg(R0), imm(0), true)); // No-op to set flags
+            
+            inst.push_back(branch(label(lab2), 0, "X1XX")); // Skip loop if false (Z = 1)
+
+            tmap.push();
+            genBlock(head->children[1]);
+            tmap.pop();
+            inst.push_back(branch(label(lab1)));
+
+            // After the while statement
+            inst.push_back(labelI(lab2));
+            break;
+        
+        case FUNCTION_CALL:
+            genFuncCall(head->children[0]);
+            break;
+        case EMPTY:
+            // Need a No-op to prevent edge case bugs
+            inst.push_back(dp(ADD, R0, reg(R0), imm(0)));
+            break;
+    }   
+
 }
 
 int bool_to_int(string str) {

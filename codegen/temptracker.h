@@ -125,9 +125,10 @@ public:
     TempTracker* tempMap;
     Node* paramList;
 
-    TempMapper(TempTracker* map = NULL, Node* paramList = NULL) {
+    TempMapper(TempTracker* map = NULL, Node* pl = NULL) {
         push();
         tempMap = map;
+        paramList = pl;
     }
 
     void push() {
@@ -143,6 +144,9 @@ public:
         int w = whichTracker[iden];
         whichTracker[iden] = w + 1;
         Var v = {iden, w};
+        if (scope.back().count(iden)) {
+            printf("Error, double declaration in same scope\n");
+        }
         scope.back()[iden] = {iden, w};
     }
 
