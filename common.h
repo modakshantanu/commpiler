@@ -19,7 +19,7 @@ enum {
     PROGRAM, PARAM_LIST, ARG_LIST, STATEMENT, EXPRESSION, EXPRESSION2, LITERAL, UNARY_OP, BINARY_OP, FUNCTION_CALL, INDEXED, DECLARATION,
     BLOCK, FUNCTION_DECL, DECLASSIGN, DECLONLY, IFELSE, EMPTY, NONE,
     // ASM
-    ASR, LSR, LSL, MOV, LDR, STR
+    ASR, LSR, LSL, MOV, LDR
 
 };
 
@@ -38,7 +38,7 @@ vector<string> tokenNames =  {
     "BLOCK", "FUNCTION_DECL", "DECLASSIGN", "DECLONLY", "IFELSE" , "EMPTY", "",
 
     // ASM instructions
-    "ASR", "LSR", "LSL", "MOV", "LDR" , "STR"
+    "ASR", "LSR", "LSL", "MOV", "LDR"
 };
 
 struct Token {

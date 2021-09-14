@@ -37,6 +37,7 @@ int main(int argc, char* argv[]) {
 
     checkSemantics(AST);
 
+    generate(AST);
 
     
 

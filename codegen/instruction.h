@@ -95,7 +95,6 @@ public:
     } 
 };
 
-
 Instruction dp(int op, int dest, Op op1, Op op2, bool setFlags = false, string condFlags = "") {
     Instruction res;
     res.type = DP;
@@ -138,11 +137,12 @@ Instruction mem(int op, int dest, Op op1, int offset = 0) {
     return res;
 }
 
-Instruction push(int dest) {
+Instruction push(int source) {
     Instruction res;
     res.type = PUSH;
-    res.dest = dest;
+    res.dest = source;
     res.len = 2;
+    return res;
 }
 
 Instruction pop(int dest) {
@@ -150,6 +150,15 @@ Instruction pop(int dest) {
     res.type = POP;
     res.dest = dest;
     res.len = 2;
+    return res;
+}
+
+Instruction labelI(int id) {
+    Instruction res;
+    res.type = LABEL;
+    res.len = 0;
+    res.dest = id;
+    return res;
 }
 
 #endif

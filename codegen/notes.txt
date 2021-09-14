@@ -17,7 +17,7 @@ Stack :
         Local0
         Local1
         ...
-        Local N
+        Local M-1
 
         ...
 
@@ -110,8 +110,8 @@ Rules for code gen:
         ldr pc sp +N+1
 
     gen(main()):
-        mov sp STACK_BASE + 2
-        move fp STACK_BASE + 0
+        ADD sp STACK_BASE + 2
+        MOVE fp STACK_BASE
         push -1 (FP)
         push -1 (RA)
 

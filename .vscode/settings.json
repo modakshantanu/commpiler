@@ -23,6 +23,12 @@
         "ratio": "cpp",
         "array": "cpp",
         "type_traits": "cpp",
-        "utility": "cpp"
+        "utility": "cpp",
+        "unordered_set": "cpp",
+        "xstring": "cpp",
+        "list": "cpp",
+        "map": "cpp",
+        "xhash": "cpp",
+        "xtree": "cpp"
     }
 }

@@ -140,7 +140,7 @@ void checkStatement(Node* head) {
 
             iden = children[0]->token.str;
             type = vt.getType(iden);
-            expr = children[0];
+            expr = children[1];
 
             // Check if var declared & check if expression type matches
             if (!(type != ERR && checkExpression(expr) == type)) {
