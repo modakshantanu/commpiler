@@ -6,6 +6,8 @@ using namespace std;
 
 unordered_map<string, int> funcLabels;
 const int STACK_BASE = 0; // The stack base is a label 
+const int READ_ADDR = 10000; // Where to write to
+const int WRITE_ADDR = 20000; // Where to read from
 int labelNum = 1;
 
 string output = "";
@@ -24,6 +26,10 @@ string generate(Node* head) {
 
     for (auto it: head->children) {
         string iden = it->children[1]->token.str;
+        if (funcLabels[iden] != 0) {
+            cout<<"Function Overloading not supported\n";
+            exit(0);
+        }
         funcLabels[iden] = labelNum++;
     }
 
@@ -168,13 +174,13 @@ void genFuncCall(Node* head) {
     }
 
     // Push own FP to stack
-    push(FP);
+    inst.push_back(push(FP));
 
     // Push return address
     // It is not known at this stage yet, so use dynamic label
     int returnAddr = labelNum++;
     inst.push_back(dp(MOV, R0, label(returnAddr), none()));
-    push(R0);
+    inst.push_back(push(R0));
 
     // FP = SP - (num of params + 2)
     inst.push_back(dp(ADD, FP, reg(SP), imm(-(head->children[1]->children.size() + 2))));
