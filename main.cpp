@@ -16,9 +16,15 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
+    string outname = "out.txt";
+    if (argc >= 3) {
+        outname = argv[2];
+    } 
+
 
     string input = argv[1];
     ifstream file(input);
+    ofstream outfile(outname);
 
     if (!file) {
         printf("File not found");
@@ -44,7 +50,8 @@ int main(int argc, char* argv[]) {
     checkSemantics(AST);
 
     printTree(AST , 0);
-    generate(AST);
+    outfile<<generate(AST);
+
 
     
 

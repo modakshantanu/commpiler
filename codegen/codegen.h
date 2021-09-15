@@ -6,8 +6,7 @@ using namespace std;
 
 unordered_map<string, int> funcLabels;
 const int STACK_BASE = 0; // The stack base is a label 
-const int READ_BASE = 10000; // Where to write to
-const int WRITE_BASE = 20000; // Where to read from
+
 int labelNum = 1;
 
 string output = "";
@@ -23,8 +22,8 @@ void assignLabels();
 
 vector<Instruction> inst;
 
-string generate(Node* head) {
     // Loop through each function and generate a id for each 
+string generate(Node* head) {
     // + count number of temporaries declared
 
     for (auto it: head->children) {
@@ -51,10 +50,13 @@ string generate(Node* head) {
         genFunction(it);
     }
 
+    // at the end of all the functions is the STACK_BASE location
+    inst.push_back(labelI(STACK_BASE));
+
     assignLabels();
     
     for (auto it: inst) {
-        cout<<it.toString()<<endl;
+        output += it.toString() + '\n';
     }
 
     return output;
@@ -94,6 +96,11 @@ void dfs(Node* head) {
         }
 
         if (it->token.subtype == DECLASSIGN || it->token.subtype == ASSIGN) {
+            if (it->token.subtype == DECLASSIGN) {
+                usedset.insert(it->children[0]->children[1]->token.str);
+            } else {
+                usedset.insert(it->children[0]->token.str);
+            }
             dfsExpr(it->children[1]);
         }
 
@@ -101,6 +108,10 @@ void dfs(Node* head) {
 
         if (it->token.subtype == IF || it->token.subtype == WHILE) {
             dfsExpr(it->children[0]);
+            for (auto it: usedset) {
+                tt.used(it, st);
+            }
+            usedset.clear();
             st++;
             tt.push();
             dfs(it->children[1]);
@@ -109,10 +120,18 @@ void dfs(Node* head) {
 
         if (it->token.subtype == IFELSE) {
             dfsExpr(it->children[0]);
+            for (auto it: usedset) {
+                tt.used(it, st);
+            }
+            usedset.clear();
             st++;
             tt.push();
             dfs(it->children[1]);
             tt.pop();
+            for (auto it: usedset) {
+                tt.used(it, st);
+            }
+            usedset.clear();
             tt.push();
             dfs(it->children[2]);
             tt.pop();
@@ -154,7 +173,7 @@ void genFunction(Node* head) {
 
     dfs(head->children[3]);
     tt.assignIds();
-    // tt.printAssignment();
+    tt.printAssignment();
 
     int num_locals = tt.maxSize;
     
@@ -249,16 +268,17 @@ void genExpression(Node* head) {
         case NOT:
             genExpression(head->children[0]);
             // Result is a 1 or a 0
-            inst.push_back(dp(BXOR, R0, reg(R0), imm(0b1))); // Flip the bit
+            inst.push_back(dp(XOR, R0, reg(R0), imm(0b1))); // Flip the bit
             break;
         case BNOT:
             genExpression(head->children[0]);
-            inst.push_back(dp(BNOT, R0, reg(R1),none()));
+            inst.push_back(dp(NOT, R0, reg(R1),none()));
             break;
         
         // Arithmetic Binary Operators
         // We assume all operators have a corresponding instruction
         case ADD: case SUB: case MUL: case DIV: case MOD: case BOR: case BAND: case BXOR: case L_SHIFT: case R_SHIFT:
+        
             genExpression(head->children[0]);
             inst.push_back(push(R0)); // Temporarily store on stack
             genExpression(head->children[1]);
@@ -465,7 +485,7 @@ void insertWriteMacro() {
 
     // R0 = data, R1 = addr
     // Just do this
-    inst.push_back(mem(STR, R0, reg(R1), WRITE_BASE));
+    inst.push_back(mem(STR, R1, reg(R0), WRITE_BASE));
 
 }
 
@@ -474,21 +494,7 @@ void assignLabels() {
     int i = 0;
 
     vector<Instruction> swap;
-    // Expand PUSH and POP, remove LABEL
-    for (auto it: inst) {
-        if (it.type == PUSH) {
-            int src = it.dest;
-            swap.push_back(mem(STR, src, reg(SP)));
-            swap.push_back(dp(ADD, SP, reg(SP), imm(1)));
-        } else if (it.type == POP) {
-            int dest = it.dest;
-            swap.push_back(mem(LDR, dest, reg(SP)));
-            swap.push_back(dp(SUB, SP, reg(SP), imm(1)));
-        } else {
-            swap.push_back(it);
-        }
-    }
-    inst = swap;
+
 
     // Calculate locations
     for (auto &it: inst) {
@@ -508,5 +514,20 @@ void assignLabels() {
             it.op1 = imm(pos);
         }
     }
+    // Expand PUSH and POP, remove LABEL
+    for (auto it: inst) {
+        if (it.type == PUSH) {
+            int src = it.dest;
+            swap.push_back(mem(STR, src, reg(SP)));
+            swap.push_back(dp(ADD, SP, reg(SP), imm(1)));
+        } else if (it.type == POP) {
+            int dest = it.dest;
+            swap.push_back(dp(SUB, SP, reg(SP), imm(1)));
+            swap.push_back(mem(LDR, dest, reg(SP)));
+        } else if (it.type != LABEL) {
+            swap.push_back(it);
+        }
+    }
+    inst = swap;
     
 }

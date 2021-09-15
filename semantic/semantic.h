@@ -55,6 +55,9 @@ Node* getDefaultReturn(Node* parent) {
     } else if (returnType == STR) {
         literal = "\"\"";
         litType = STR_LIT;
+    } else if (returnType == BOOL) {
+        literal = "false";
+        litType = BOOL_LIT;
     } else {
         literal = "";
     }

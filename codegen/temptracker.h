@@ -52,6 +52,7 @@ public:
     }
 
     void used(string iden, int st) {
+        printf("%s uesd, line %d\n", iden.c_str(), st);
         int w = -1;
         for (int i = scope.size() - 1; i >= 0; i--) {
             if (scope[i].count(iden)) {

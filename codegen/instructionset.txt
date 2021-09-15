@@ -35,7 +35,9 @@ DP:
     LSL
     XOR
     AND
-    OR
+    ORR
+    MOD 
+    DIV
 
     unary
     NOT

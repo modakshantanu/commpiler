@@ -51,7 +51,7 @@ public:
     string toString() {
         string res;
         if (type == DP) {
-            res += tokenNames[oper];
+            res += asmNames[oper];
             if (set) res += "S";
             if (cond) {
                 res += "IF ";
