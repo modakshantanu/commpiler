@@ -28,6 +28,12 @@ int main(int argc, char* argv[]) {
     stringstream buf;
     buf << file.rdbuf();
     string str = buf.str();
+
+    // Special functions
+    str += "\n\
+    void write(int data, int addr) {;}\n\
+    int read(int addr) {;}\n\
+    ";
     
     
     vector<Token> tokens = tokenize(str);

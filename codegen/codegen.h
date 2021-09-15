@@ -6,8 +6,8 @@ using namespace std;
 
 unordered_map<string, int> funcLabels;
 const int STACK_BASE = 0; // The stack base is a label 
-const int READ_ADDR = 10000; // Where to write to
-const int WRITE_ADDR = 20000; // Where to read from
+const int READ_BASE = 10000; // Where to write to
+const int WRITE_BASE = 20000; // Where to read from
 int labelNum = 1;
 
 string output = "";
@@ -16,7 +16,10 @@ void genFunction(Node* head);
 void genExpression(Node* head);
 void genBlock(Node* head);
 void genStatement(Node* head);
+void insertReadMacro();
+void insertWriteMacro();
 int bool_to_int(string);
+void assignLabels();
 
 vector<Instruction> inst;
 
@@ -26,8 +29,12 @@ string generate(Node* head) {
 
     for (auto it: head->children) {
         string iden = it->children[1]->token.str;
+
         if (funcLabels[iden] != 0) {
-            cout<<"Function Overloading not supported\n";
+            cout<<"ERROR: Function Overloading not supported\n";
+            if (iden == "write" || iden == "read") {
+                cout<<"'write' and 'read' are reserved for system functions\n";
+            }
             exit(0);
         }
         funcLabels[iden] = labelNum++;
@@ -43,6 +50,8 @@ string generate(Node* head) {
     for (auto it: head->children) {
         genFunction(it);
     }
+
+    assignLabels();
     
     for (auto it: inst) {
         cout<<it.toString()<<endl;
@@ -58,8 +67,6 @@ TempMapper tmap;
 unordered_set<string> usedset; 
 
 void dfsExpr(Node* head) {
-    
-
     if (head->token.type == EXPRESSION && head->token.subtype == IDEN) {
         usedset.insert(head->token.str);
     } else {
@@ -128,7 +135,7 @@ void dfs(Node* head) {
 
 void genFunction(Node* head) {
     string iden = head->children[1]->token.str;
-    printf("Function: %s\n", iden.c_str());
+    // printf("Function: %s\n", iden.c_str());
 
     int l = funcLabels[iden];
 
@@ -147,12 +154,15 @@ void genFunction(Node* head) {
 
     dfs(head->children[3]);
     tt.assignIds();
-    tt.printAssignment();
+    // tt.printAssignment();
 
     int num_locals = tt.maxSize;
     
     // Function call code
     inst.push_back(dp(ADD, SP, reg(SP), imm(num_locals))); // SP += num of locals
+    
+    // if (iden == "read") insertReadMacro();
+    // else if (iden == "write") insertReadMacro();
     genBlock(head->children[3]);
 
 }
@@ -165,7 +175,9 @@ void genBlock(Node* head) {
 
 void genFuncCall(Node* head) {
     string iden = head->children[0]->token.str;
-    int fl = funcLabels[iden];
+
+
+
 
     for (auto arg: head->children[1]->children) {
         // One by one generate the arguments, and then push to the stack
@@ -173,6 +185,15 @@ void genFuncCall(Node* head) {
         inst.push_back(push(R0)); 
     }
 
+    if (iden == "read") {
+        insertReadMacro();
+        return;
+    } else if (iden == "write") {
+        insertWriteMacro();
+        return;
+    }
+
+    int fl = funcLabels[iden];
     // Push own FP to stack
     inst.push_back(push(FP));
 
@@ -427,4 +448,65 @@ void printLabels() {
     for (auto it: funcLabels) {
         printf("%s: %d\n", it.first.c_str(), it.second);
     }
+}
+
+void insertReadMacro() {
+    // Addr is in the stack
+    // Pop to R0
+    inst.push_back(pop(R0));
+    // LDR Memory location to R0, DONE!
+    inst.push_back(mem(LDR, R0, reg(R0), READ_BASE));
+}
+
+void insertWriteMacro() {
+    // Pop the 2 values in reverse order
+    inst.push_back(pop(R1));
+    inst.push_back(pop(R0));
+
+    // R0 = data, R1 = addr
+    // Just do this
+    inst.push_back(mem(STR, R0, reg(R1), WRITE_BASE));
+
+}
+
+void assignLabels() {
+    unordered_map<int, int> labelPos;
+    int i = 0;
+
+    vector<Instruction> swap;
+    // Expand PUSH and POP, remove LABEL
+    for (auto it: inst) {
+        if (it.type == PUSH) {
+            int src = it.dest;
+            swap.push_back(mem(STR, src, reg(SP)));
+            swap.push_back(dp(ADD, SP, reg(SP), imm(1)));
+        } else if (it.type == POP) {
+            int dest = it.dest;
+            swap.push_back(mem(LDR, dest, reg(SP)));
+            swap.push_back(dp(SUB, SP, reg(SP), imm(1)));
+        } else {
+            swap.push_back(it);
+        }
+    }
+    inst = swap;
+
+    // Calculate locations
+    for (auto &it: inst) {
+        if (it.type == LABEL) {
+            labelPos[it.dest] = i;
+        }
+        i += it.len;
+    }
+    // Hardcode locations
+    for (auto &it: inst) {
+        if (it.op1.type == LABEL) {
+            int pos = labelPos[it.op1.value];
+            it.op1 = imm(pos);
+        }
+        if (it.op2.type == LABEL) {
+            int pos = labelPos[it.op1.value];
+            it.op1 = imm(pos);
+        }
+    }
+    
 }
