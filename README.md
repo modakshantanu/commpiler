@@ -28,3 +28,7 @@ to run the code in the 'emulator'. The emulator will let you write to the input 
 The instruction set is based off of ARM, but with some simplifications. Importantly, division and modulo are separate instructions to simplify the code generation. Also, all memory addresses store 32-bit integers, so there is no notion of word alignment vs byte alignment. PC increments by +1 instead of +4.
 
 The flags C and V are not fully implemented as they were not needed in code generation. The syntax for conditional instructions is also a bit different.
+
+## Example
+
+There is no proper example folder, but abc.txt shows a program that finds the first prime above n. out.txt shows its assembly. 
